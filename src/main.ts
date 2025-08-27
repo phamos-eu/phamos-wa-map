@@ -15,6 +15,25 @@ WA.onInit().then(() => {
         const today = new Date();
         const time = today.getHours() + ":" + today.getMinutes();
         currentPopup = WA.ui.openPopup("clockPopup", "It's " + time, []);
+        fetch('https://phamos.eu/api/method/ping')
+            .then(response => {
+                console.log('API Response Status:', response.status);
+                console.log('API Response Headers:', response.headers);
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    return response.text();
+                }
+            })
+            .then(data => {
+                console.log('API Response Data:', data);
+            })
+            .catch(error => {
+              console.error('API Call Error:', error);
+        });
     })
 
     WA.room.area.onLeave('clock').subscribe(closePopup)
