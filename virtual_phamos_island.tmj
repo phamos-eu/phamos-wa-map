@@ -585,6 +585,12 @@
  "nextlayerid":55,
  "nextobjectid":18,
  "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"script",
+         "type":"string",
+         "value":"src\/main.ts"
+        }],
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
  "tileheight":32,
@@ -647,6 +653,27 @@
                         }]
                 }, 
                 {
+                 "id":5
+                }, 
+                {
+                 "id":6
+                }, 
+                {
+                 "id":7
+                }, 
+                {
+                 "id":8
+                }, 
+                {
+                 "id":9
+                }, 
+                {
+                 "id":10
+                }, 
+                {
+                 "id":11
+                }, 
+                {
                  "id":15,
                  "properties":[
                         {
@@ -671,6 +698,33 @@
                          "name":"jitsiRoom",
                          "type":"string",
                          "value":"phamos-wa-team5"
+                        }]
+                }, 
+                {
+                 "id":0,
+                 "properties":[
+                        {
+                         "name":"status",
+                         "type":"string",
+                         "value":"busy"
+                        }]
+                }, 
+                {
+                 "id":1,
+                 "properties":[
+                        {
+                         "name":"status",
+                         "type":"string",
+                         "value":"do-not-disturb"
+                        }]
+                }, 
+                {
+                 "id":4,
+                 "properties":[
+                        {
+                         "name":"status",
+                         "type":"string",
+                         "value":"back-in-a-moment"
                         }]
                 }],
          "tilewidth":32

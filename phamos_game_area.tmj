@@ -92,6 +92,72 @@
                          "type":"string",
                          "value":"phamos-wa-center-meeting"
                         }]
+                }, 
+                {
+                 "id":0,
+                 "properties":[
+                        {
+                         "name":"status",
+                         "type":"string",
+                         "value":"busy"
+                        }]
+                }, 
+                {
+                 "id":3
+                }, 
+                {
+                 "id":1,
+                 "properties":[
+                        {
+                         "name":"status",
+                         "type":"string",
+                         "value":"do-not-disturb"
+                        }]
+                }, 
+                {
+                 "id":5
+                }, 
+                {
+                 "id":6
+                }, 
+                {
+                 "id":7
+                }, 
+                {
+                 "id":8
+                }, 
+                {
+                 "id":9
+                }, 
+                {
+                 "id":10
+                }, 
+                {
+                 "id":11
+                }, 
+                {
+                 "id":4,
+                 "properties":[
+                        {
+                         "name":"status",
+                         "type":"string",
+                         "value":"back-in-a-moment"
+                        }]
+                }, 
+                {
+                 "id":13
+                }, 
+                {
+                 "id":14
+                }, 
+                {
+                 "id":15
+                }, 
+                {
+                 "id":16
+                }, 
+                {
+                 "id":17
                 }],
          "tilewidth":32
         }, 
