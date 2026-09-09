@@ -2106,7 +2106,7 @@
     {
       "columns": 16,
       "firstgid": 1,
-      "image": "phamos_game_area-chunk-1-57c269af.png",
+      "image": "phamos_game_area-chunk-1-8008c656.png",
       "imageheight": 512,
       "imagewidth": 512,
       "margin": 0,
@@ -2121,7 +2121,7 @@
     {
       "columns": 16,
       "firstgid": 257,
-      "image": "phamos_game_area-chunk-2-57c269af.png",
+      "image": "phamos_game_area-chunk-2-8008c656.png",
       "imageheight": 512,
       "imagewidth": 512,
       "margin": 0,
@@ -2136,7 +2136,7 @@
     {
       "columns": 5,
       "firstgid": 513,
-      "image": "phamos_game_area-chunk-3-57c269af.png",
+      "image": "phamos_game_area-chunk-3-8008c656.png",
       "imageheight": 160,
       "imagewidth": 160,
       "margin": 0,
