@@ -156,6 +156,23 @@
             </section>
 
             <section>
+                <h2>🏀 PHAMOS Game Area Virtual Office Map</h2>
+                <p>Top-down virtual office map recreated from basketball arena court blueprint.</p>
+                <p><a id="gameAreaBtnURL" href="#" class="button" style="background-color:rgba(215,95,30,0.95)">Test PHAMOS Game Area Map</a></p>
+                <script>
+                    window.addEventListener('load', function() {
+                        const host = window.location.host;
+                        let path = window.location.pathname;
+                        if (path.endsWith('index.html')) path = path.substr(0, path.length - 'index.html'.length);
+                        const instanceId = Math.random().toString(36).substring(2, 15);
+                        const gameAreaURL = 'https://play.workadventu.re/_/' + instanceId + '/' + host + path + 'phamos_game_area.tmj';
+                        const btn = document.getElementById('gameAreaBtnURL');
+                        if (btn) btn.href = gameAreaURL;
+                    });
+                </script>
+            </section>
+
+            <section>
                 <h2>Publish my map</h2>
                 <p>Register your room on WorkAdventure!</p>
                 <p>Copy and paste the map URL in WorkAdventure's administration panel:</p>

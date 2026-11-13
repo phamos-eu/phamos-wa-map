@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Free-Throw Streak</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23f08a2a' stroke='%23331405' stroke-width='2'/%3E%3Cpath d='M2 16h28M16 2v28M6 6c5 5 5 15 0 20M26 6c-5 5-5 15 0 20' fill='none' stroke='%23331405' stroke-width='1.6'/%3E%3C/svg%3E" />
+    <style>
+        :root {
+            --bg: #0a0e22;
+            --panel: #131a3a;
+            --panel-2: #1b2452;
+            --line: #2b3670;
+            --text: #eef1ff;
+            --muted: #9aa3d6;
+            --accent: #ff8a2a;
+            --cyan: #3ee6ff;
+            --green: #3ddc6b;
+            --yellow: #ffd23f;
+            --red: #ff4d5e;
+            --font: "Arial Rounded MT Bold", "Trebuchet MS", system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; height: 100%; }
+        body {
+            background: radial-gradient(120% 80% at 50% 0%, #1a2257 0%, var(--bg) 60%) fixed, var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-x: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app {
+            width: 100%;
+            max-width: 600px;
+            padding: 12px 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* ---------- header ---------- */
+        .topbar { display: flex; align-items: center; gap: 8px; }
+        .title {
+            flex: 1;
+            margin: 0;
+            font-size: 17px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-weight: 900;
+            font-style: italic;
+            background: linear-gradient(90deg, var(--accent), var(--yellow));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chip {
+            font-size: 11px;
+            color: var(--muted);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 3px 8px;
+            white-space: nowrap;
+            max-width: 40%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--text);
+            cursor: pointer;
+            padding: 0;
+            flex: none;
+        }
+        .icon-btn:hover { background: var(--panel-2); }
+        .icon-btn:focus-visible, .btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+        .icon-btn svg { width: 18px; height: 18px; }
+        .icon-btn[aria-pressed="true"] { color: var(--red); }
+
+        /* ---------- scoreboard ---------- */
+        .scoreboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.6fr;
+            gap: 6px;
+        }
+        .stat {
+            background: linear-gradient(180deg, var(--panel-2), var(--panel));
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 6px 10px;
+            min-width: 0;
+        }
+        .stat-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.15;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .stat-value small { font-size: 13px; font-weight: 700; color: var(--muted); }
+        #streak { color: var(--yellow); text-shadow: 0 0 12px rgba(255, 210, 63, 0.45); }
+        .bump { animation: bump 0.35s ease-out; transform-origin: 0 60%; }
+        @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
+
+        /* ---------- court ---------- */
+        .stage {
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        canvas { display: block; width: 100%; aspect-ratio: 480 / 300; background: #10163a; }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+            padding: 16px;
+            background: rgba(7, 10, 28, 0.78);
+            backdrop-filter: blur(3px);
+            cursor: default;
+        }
+        .overlay[hidden] { display: none; }
+        .overlay h2 {
+            margin: 0;
+            font-size: clamp(22px, 6vw, 34px);
+            font-weight: 900;
+            font-style: italic;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .overlay p { margin: 0; color: var(--muted); font-size: 13px; max-width: 34ch; line-height: 1.4; }
+        .overlay .big { font-size: clamp(18px, 4.6vw, 24px); color: var(--text); font-weight: 800; }
+        .overlay .big b { color: var(--yellow); }
+        .gameover h2 { color: var(--red); text-shadow: 0 0 18px rgba(255, 77, 94, 0.5); }
+        .intro h2 { color: var(--accent); text-shadow: 0 0 18px rgba(255, 138, 42, 0.45); }
+        .badge {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(61, 220, 107, 0.15);
+            color: var(--green);
+            border: 1px solid rgba(61, 220, 107, 0.5);
+        }
+        .badge.record { background: rgba(255, 210, 63, 0.15); color: var(--yellow); border-color: rgba(255, 210, 63, 0.5); }
+        .badge[hidden] { display: none; }
+        .btn {
+            margin-top: 6px;
+            font: inherit;
+            font-weight: 900;
+            font-size: 16px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #241002;
+            background: linear-gradient(180deg, #ffb35c, var(--accent));
+            border: 0;
+            border-radius: 12px;
+            padding: 11px 26px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a54d0b, 0 8px 20px rgba(255, 138, 42, 0.35);
+        }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #a54d0b; }
+        .kbd {
+            display: inline-block;
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 5px;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--text);
+        }
+
+        /* ---------- timing meter ---------- */
+        .meter { display: flex; flex-direction: column; gap: 6px; cursor: pointer; touch-action: manipulation; }
+        .track {
+            position: relative;
+            height: 26px;
+            border-radius: 13px;
+            background: linear-gradient(180deg, #3a1420, #2a0e17);
+            border: 1px solid #5a2333;
+            overflow: hidden;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+        }
+        .zone { position: absolute; top: 0; bottom: 0; transition: left 0.25s ease, width 0.25s ease; }
+        .zone.rim { background: linear-gradient(180deg, #ffe07a, var(--yellow)); }
+        .zone.swish { background: linear-gradient(180deg, #7dffa2, var(--green)); box-shadow: 0 0 14px rgba(61, 220, 107, 0.8); }
+        .needle {
+            position: absolute;
+            top: -2px;
+            bottom: -2px;
+            width: 6px;
+            margin-left: -3px;
+            border-radius: 3px;
+            background: #fff;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(0, 0, 0, 0.6);
+            will-change: left;
+        }
+        .needle.frozen { background: var(--cyan); box-shadow: 0 0 10px var(--cyan), 0 0 0 1px rgba(0, 0, 0, 0.6); }
+        .legend { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--muted); }
+        .legend span { display: inline-flex; align-items: center; gap: 5px; }
+        .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+        .hint { text-align: center; font-size: 12px; color: var(--muted); min-height: 1.4em; }
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+        @media (max-width: 380px) {
+            .scoreboard { grid-template-columns: 1fr 1fr; }
+            .scoreboard .stat:last-child { grid-column: 1 / -1; }
+            .chip { display: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .bump { animation: none; }
+            .zone { transition: none; }
+        }
+    </style>
+  <script type="module" crossorigin src="../assets/freeThrow-3ec33eca.js"></script>
+  <link rel="modulepreload" crossorigin href="../assets/shared-1d854a1e.js">
+</head>
+<body>
+<main class="app">
+    <header class="topbar">
+        <h1 class="title">🏀 Free-Throw Streak</h1>
+        <span class="chip" id="mode-chip">Connecting…</span>
+        <button class="icon-btn" id="mute" type="button" aria-pressed="false" aria-label="Mute sound" title="Mute (M)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none" />
+                <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
+                <path class="snd-off" d="m16 9 6 6m0-6-6 6" style="display:none" />
+            </svg>
+        </button>
+        <button class="icon-btn" id="close" type="button" aria-label="Close mini-game" title="Close (Esc)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+        </button>
+    </header>
+
+    <section class="scoreboard" aria-label="Scores">
+        <div class="stat">
+            <div class="stat-label">Streak</div>
+            <div class="stat-value" id="streak">0</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Your best</div>
+            <div class="stat-value" id="best">0</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Court record</div>
+            <div class="stat-value" id="record">—</div>
+        </div>
+    </section>
+
+    <section class="stage" id="stage">
+        <canvas id="court" width="480" height="300" aria-label="Basketball hoop and shooter"></canvas>
+
+        <div class="overlay intro" id="intro">
+            <h2>Free-Throw Streak</h2>
+            <p>Stop the meter in the <b style="color:var(--green)">green</b> for a swish. <b style="color:var(--yellow)">Yellow</b> still drops in off the rim or glass. Anything else ends your streak.</p>
+            <p>Every make speeds the meter up and shrinks the sweet spot.</p>
+            <button class="btn" id="start" type="button">Start</button>
+            <p><span class="kbd">Space</span> or click / tap to shoot</p>
+        </div>
+
+        <div class="overlay gameover" id="gameover" hidden>
+            <h2>Game Over</h2>
+            <div class="big">Streak: <b id="final-streak">0</b></div>
+            <span class="badge" id="badge-best" hidden>New personal best!</span>
+            <span class="badge record" id="badge-record" hidden>New court record!</span>
+            <p id="over-detail"></p>
+            <button class="btn" id="again" type="button">Play Again</button>
+            <p><span class="kbd">Space</span> to play again</p>
+        </div>
+    </section>
+
+    <section class="meter" id="meter" aria-label="Shot timing meter">
+        <div class="track" id="track">
+            <div class="zone rim" id="zone-rim"></div>
+            <div class="zone swish" id="zone-swish"></div>
+            <div class="needle" id="needle"></div>
+        </div>
+        <div class="legend">
+            <span><i class="dot" style="background:var(--green)"></i>Swish</span>
+            <span><i class="dot" style="background:var(--yellow)"></i>Rim / bank</span>
+            <span><i class="dot" style="background:var(--red)"></i>Miss</span>
+        </div>
+    </section>
+    <div class="hint" id="hint">Press <span class="kbd">Space</span> or tap to shoot</div>
+    <div class="sr-only" aria-live="polite" id="live"></div>
+</main>
+
+</body>
+</html>
