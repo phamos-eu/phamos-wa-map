@@ -28,6 +28,7 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 index: "./index.html",
+                freeThrow: "./games/free-throw.html",
                 ...getMapsScripts(maps),
             },
         },
