@@ -139,7 +139,7 @@
             {
               "height": 0,
               "id": 20,
-              "name": "freeThrowRecord",
+              "name": "freeThrowLeaderboard",
               "point": true,
               "properties": [
                 {
@@ -164,6 +164,35 @@
               "width": 0,
               "x": 2880,
               "y": 2304
+            },
+            {
+              "height": 0,
+              "id": 21,
+              "name": "freeThrowSeason",
+              "point": true,
+              "properties": [
+                {
+                  "name": "persist",
+                  "type": "bool",
+                  "value": true
+                },
+                {
+                  "name": "readableBy",
+                  "type": "string",
+                  "value": ""
+                },
+                {
+                  "name": "writableBy",
+                  "type": "string",
+                  "value": "admin"
+                }
+              ],
+              "rotation": 0,
+              "type": "variable",
+              "visible": true,
+              "width": 0,
+              "x": 2912,
+              "y": 2304
             }
           ],
           "opacity": 1,
@@ -182,7 +211,7 @@
     }
   ],
   "nextlayerid": 50,
-  "nextobjectid": 21,
+  "nextobjectid": 22,
   "orientation": "orthogonal",
   "properties": [
     {
