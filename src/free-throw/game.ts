@@ -2,7 +2,7 @@
 
 import { createAudio, SoundName } from "./audio";
 import { connectScores, ScoreStore } from "./scores";
-import type { CourtRecord } from "./shared";
+import type { LeaderEntry } from "./shared";
 
 // ---------------------------------------------------------------------------
 // Scene geometry (logical canvas units; the canvas is scaled to fit)
@@ -135,6 +135,14 @@ const ui = {
     overDetail: $("over-detail"),
     hint: $("hint"),
     live: $("live"),
+    lbList: $("lb-list"),
+    lbEmpty: $("lb-empty"),
+    lbAdmin: $("lb-admin"),
+    lbReset: $<HTMLButtonElement>("lb-reset"),
+    lbConfirm: $("lb-confirm"),
+    lbCancel: $<HTMLButtonElement>("lb-cancel"),
+    lbConfirmYes: $<HTMLButtonElement>("lb-confirm-yes"),
+    lbStatus: $("lb-status"),
 };
 
 const params = new URLSearchParams(location.search);
@@ -183,7 +191,7 @@ function bump(el: HTMLElement) {
     el.classList.add("bump");
 }
 
-function renderRecord(record: CourtRecord | null) {
+function renderRecord(record: LeaderEntry | null) {
     if (!record) {
         ui.record.textContent = "—";
         ui.record.title = "No record yet";
@@ -197,10 +205,75 @@ function renderRecord(record: CourtRecord | null) {
     ui.record.title = `${record.name} — ${record.streak}`;
 }
 
+let shownBoard = "";
+
+function renderBoard() {
+    const entries = scores?.leaderboard() ?? [];
+    // Skip DOM churn when nothing changed (renderHud runs after every make).
+    const key = JSON.stringify(entries.map((e) => [e.id, e.streak, e.name]));
+    if (key === shownBoard) return;
+    const previous = new Map<string, number>(
+        shownBoard ? (JSON.parse(shownBoard) as [string, number, string][]).map(([id, n]) => [id, n]) : [],
+    );
+    shownBoard = key;
+
+    ui.lbList.replaceChildren(
+        ...entries.map((e, i) => {
+            const li = document.createElement("li");
+            if (e.id === scores?.playerId) li.classList.add("me");
+            if (previous.size && previous.get(e.id) !== e.streak) li.classList.add("fresh");
+            const rank = document.createElement("span");
+            rank.className = "rank";
+            rank.textContent = String(i + 1);
+            const name = document.createElement("span");
+            name.className = "name";
+            name.textContent = e.name; // textContent: names come from other players
+            name.title = e.name;
+            const pts = document.createElement("span");
+            pts.className = "pts";
+            pts.textContent = String(e.streak);
+            li.append(rank, name, pts);
+            return li;
+        }),
+    );
+    ui.lbEmpty.hidden = entries.length > 0;
+}
+
 function renderHud() {
     ui.streak.textContent = String(streak);
     ui.best.textContent = String(scores?.best() ?? 0);
     renderRecord(scores?.record() ?? null);
+    renderBoard();
+}
+
+function setBoardStatus(text: string, kind: "" | "ok" | "error" = "") {
+    ui.lbStatus.textContent = text;
+    ui.lbStatus.className = `lb-status ${kind}`.trim();
+}
+
+function showResetConfirm(open: boolean) {
+    ui.lbConfirm.hidden = !open;
+    ui.lbReset.hidden = open;
+    (open ? ui.lbCancel : ui.lbReset).focus({ preventScroll: true });
+}
+
+async function resetScores() {
+    if (!scores?.canReset) return;
+    ui.lbConfirmYes.disabled = true;
+    setBoardStatus("Resetting…");
+    try {
+        await scores.reset();
+        runNewBest = false;
+        runNewRecord = false;
+        renderHud();
+        setBoardStatus("Scores reset. New season started.", "ok");
+    } catch (e) {
+        console.warn("[free-throw] reset failed", e);
+        setBoardStatus("Reset failed — your account needs the \"admin\" tag.", "error");
+    } finally {
+        ui.lbConfirmYes.disabled = false;
+        showResetConfirm(false);
+    }
 }
 
 function placeZones() {
@@ -783,7 +856,8 @@ window.addEventListener(
         } else if (e.key === "m" || e.key === "M") {
             toggleMute();
         } else if (e.key === "Escape") {
-            closeGame();
+            if (!ui.lbConfirm.hidden) showResetConfirm(false);
+            else closeGame();
         }
     },
     { capture: true },
@@ -820,6 +894,12 @@ function toggleMute() {
 }
 ui.mute.addEventListener("click", toggleMute);
 ui.close.addEventListener("click", closeGame);
+ui.lbReset.addEventListener("click", () => {
+    setBoardStatus("");
+    showResetConfirm(true);
+});
+ui.lbCancel.addEventListener("click", () => showResetConfirm(false));
+ui.lbConfirmYes.addEventListener("click", () => void resetScores());
 
 // ---------------------------------------------------------------------------
 // Boot
@@ -844,9 +924,18 @@ connectScores().then((store) => {
     scores = store;
     ui.chip.textContent = store.mode === "workadventure" ? `Playing as ${store.playerName}` : "Standalone · saved in this browser";
     ui.chip.title = ui.chip.textContent;
-    store.onRecordChange((r) => {
-        renderRecord(r);
-        bump(ui.record);
+    ui.lbAdmin.hidden = !store.canReset;
+    let top = store.record();
+    store.onChange((reason) => {
+        const nextTop = store.record();
+        if (nextTop?.id !== top?.id || nextTop?.streak !== top?.streak) bump(ui.record);
+        top = nextTop;
+        if (reason === "reset") {
+            runNewBest = false;
+            runNewRecord = false;
+            if (!ui.lbStatus.classList.contains("ok")) setBoardStatus("An admin reset the scores.", "ok");
+        }
+        renderHud();
     });
     renderHud();
 });
