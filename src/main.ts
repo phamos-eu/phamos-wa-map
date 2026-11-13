@@ -1,6 +1,7 @@
 /// <reference types="@workadventure/iframe-api-typings" />
 
 import { bootstrapExtra } from "@workadventure/scripting-api-extra";
+import { initFreeThrowZones } from "./free-throw/zones";
 
 type StatusType = "ONLINE" | "BUSY" | "DO_NOT_DISTURB" | "BACK_IN_A_MOMENT";
 
@@ -12,6 +13,9 @@ interface StatusConfigItem {
 
 WA.onInit().then(async () => {
     console.info('Status tiles script ready');
+
+    // Free-Throw Streak mini-game on the basketball court
+    initFreeThrowZones();
     
     // Consolidated status configuration
     const statusConfig: Record<string, StatusConfigItem> = {
